@@ -1,0 +1,150 @@
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f9f9f9;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+    }
+    .container {
+        width: 80%;
+        padding: 20px;
+    }
+    h1 {
+        color: #333;
+        text-align: center;
+        margin-bottom: 30px;
+        font-size: 36px;
+    }
+    ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        grid-gap: 20px;
+    }
+    li {
+        background-color: #ffffff;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+        overflow: hidden;
+        position: relative;
+    }
+    li:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    .product-info {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+    .product-name {
+        font-size: 20px;
+        color: #333;
+        margin-bottom: 10px;
+    }
+    .product-price {
+        font-size: 18px;
+        color: #666;
+        margin-bottom: 20px;
+    }
+    .product-image {
+        width: 100%;
+        max-width: 200px;
+        height: auto;
+        margin-bottom: 20px;
+    }
+    .action-buttons {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 10px;
+    }
+    .action-buttons button {
+        margin: 0 5px;
+        padding: 8px 16px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+    .action-buttons button.edit {
+        background-color: #007bff;
+        color: #fff;
+    }
+    .action-buttons button.delete {
+        background-color: #dc3545;
+        color: #fff;
+    }
+    .action-buttons button:hover {
+        background-color: #555;
+    }
+</style>
+</head>
+<body>
+    <div class="container">
+        <h1>Lista de Produtos</h1>
+        <ul>
+            {% for produto in produtos %}
+                <li>
+                    <div class="product-info">
+                        <img class="product-image" src="{{ produto.image }}" alt="{{ produto.name }}">
+                        <div class="product-name">{{ produto.name }}</div>
+                        <div class="product-price">R$ {{ produto.price }}</div>
+                        <div class="action-buttons">
+                            <button class="edit">Editar</button>
+                            <button class="delete" data-id="{{ produto.id }}">Apagar</button>
+                        </div>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const deleteButtons = document.querySelectorAll('.delete');
+
+            deleteButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const productId = button.getAttribute('data-id');
+                    deleteProduct(productId);
+                });
+            });
+
+            function deleteProduct(productId) {
+                fetch(`/delete/${productId}`, {
+                    method: 'DELETE',
+                })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    }
+                    throw new Error('Erro ao excluir produto');
+                })
+                .then(data => {
+                    console.log(data.message);
+                    removeProductFromUI(productId);
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                });
+            }
+
+            function removeProductFromUI(productId) {
+                const productElement = document.querySelector(`.delete[data-id="${productId}"]`).closest('li');
+                productElement.remove();
+            }
+        });
+    </script>
+</body>
+</html>
